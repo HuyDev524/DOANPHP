@@ -37,16 +37,15 @@ foreach ($cart as $product_id => $quantity) {
 
 // Get user info
 $username = $_SESSION['username'];
-// Dựa trên DB dump, tên cột là 'id', 'full_name', 'phone'
-$stmt = $conn->prepare("SELECT id, email, full_name, phone FROM users WHERE username = ?");
+// ĐÃ SỬA: CHỈ SELECT CÁC CỘT CÓ TRONG BẢNG USERS CỦA BẠN (id, full_name, phone)
+$stmt = $conn->prepare("SELECT id, full_name, phone FROM users WHERE username = ?");
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Điều chỉnh tên key cho phù hợp với form HTML nếu cần
+// Gán giá trị mặc định cho form HTML
 $fullname_value = $user['full_name'] ?? '';
 $phone_value = $user['phone'] ?? '';
-$email_value = $user['email'] ?? ''; 
-// LƯU Ý: Nếu bảng users không có cột email, $email_value sẽ trống
+$email_value = ''; // Giả sử email không có trong DB users nên để trống để người dùng nhập
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +54,8 @@ $email_value = $user['email'] ?? '';
     <meta charset="UTF-8">
     <title>Thanh Toán - Cửa hàng online</title>
     <link rel="stylesheet" href="css/style.css"> 
-    <link rel="stylesheet" href="css/checkout_styles.css"> </head>
+    <link rel="stylesheet" href="css/checkout_styles.css"> 
+</head>
 <body>
     <div class="checkout-wrapper">
         <a href="cart_view.php" class="back-link">← Quay lại giỏ hàng</a>

@@ -11,6 +11,5 @@ try {
     $conn->exec("set names utf8");
 } catch(PDOException $e) {
     // Trên host thật, ta ẩn lỗi chi tiết để bảo mật
-    die("Lỗi kết nối Database. Vui lòng kiểm tra lại cấu hình db.php");
-}
+    die("Lỗi kết nối: " . $e->getMessage());}
 ?>
