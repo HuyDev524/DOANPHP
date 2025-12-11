@@ -8,7 +8,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Get POST data
+// Lấy dữ liệu POST từ form
 $fullname = trim($_POST['fullname'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $email = trim($_POST['email'] ?? '');
@@ -17,7 +17,7 @@ $payment_method = $_POST['payment_method'] ?? 'momo';
 
 // Validate input
 if (empty($fullname) || empty($phone) || empty($email) || empty($address)) {
-    $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin';
+    $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin giao hàng';
     header('Location: checkout.php');
     exit();
 }
@@ -31,19 +31,24 @@ if (empty($cart)) {
 }
 
 try {
-    // Get user info
-    $stmt = $conn->prepare("SELECT user_id FROM users WHERE username = ?");
+    // 1. Lấy ID người dùng (Dựa trên DB dump: cột ID trong bảng users là 'id')
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute([$_SESSION['username']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    $user_id = $user['user_id'];
     
-    // Begin transaction
+    // Kiểm tra xem có lấy được ID không
+    if (!$user) {
+        throw new Exception("Không tìm thấy thông tin người dùng.");
+    }
+    $user_id = $user['id'];
+    
+    // Bắt đầu Transaction
     $conn->beginTransaction();
     
-    // Calculate total
+    // 2. Tính toán tổng tiền
     $total = 0;
     foreach ($cart as $product_id => $quantity) {
-        $stmt_product = $conn->prepare("SELECT price FROM products WHERE id = ?");
+        $stmt_product = $conn->prepare("SELECT price, name FROM products WHERE id = ?");
         $stmt_product->execute([$product_id]);
         $product = $stmt_product->fetch(PDO::FETCH_ASSOC);
         if ($product) {
@@ -51,64 +56,59 @@ try {
         }
     }
     
-    // Determine order status based on payment method
-    $order_status = ($payment_method === 'momo') ? 'pending' : 'completed';
+    // 3. Xác định trạng thái đơn hàng ban đầu (Dựa trên logic MoMo)
+    // Cột trong DB là 'status'
+    $order_status = ($payment_method === 'momo') ? 'pending' : 'pending'; // COD cũng là pending, chờ admin xác nhận
     
-    // Create order
+    // 4. Tạo đơn hàng (Dựa trên cấu trúc bảng orders đã sửa: user_id, fullname, phone, address, total_money, status, payment_method)
     $stmt = $conn->prepare("
-        INSERT INTO orders (user_id, total_amount, shipping_address, customer_name, customer_phone, customer_email, order_status, payment_method, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        INSERT INTO orders (user_id, fullname, phone, address, total_money, status, payment_method, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
     ");
     
     $stmt->execute([
         $user_id,
-        $total,
-        $address,
         $fullname,
         $phone,
-        $email,
+        $address,
+        $total,
         $order_status,
         $payment_method
     ]);
     
     $order_id = $conn->lastInsertId();
     
-    // Add order items
+    // 5. Thêm chi tiết đơn hàng (order_items)
     foreach ($cart as $product_id => $quantity) {
         $stmt_product = $conn->prepare("SELECT name, price FROM products WHERE id = ?");
         $stmt_product->execute([$product_id]);
         $product = $stmt_product->fetch(PDO::FETCH_ASSOC);
         
         if ($product) {
+            // Cột trong DB order_items có 'product_name'
             $stmt_item = $conn->prepare("
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
+                VALUES (?, ?, ?, ?, ?)
             ");
-            $stmt_item->execute([$order_id, $product_id, $quantity, $product['price']]);
+            $stmt_item->execute([$order_id, $product_id, $product['name'], $quantity, $product['price']]);
         }
     }
     
+    // Commit Transaction
     $conn->commit();
     
-    // Save order info to session
-    $_SESSION['order_id'] = $order_id;
-    $_SESSION['order_total'] = $total;
-    $_SESSION['order_address'] = $address;
-    $_SESSION['order_fullname'] = $fullname;
-    $_SESSION['order_phone'] = $phone;
-    $_SESSION['order_email'] = $email;
-    $_SESSION['order_payment_method'] = $payment_method;
+    // 6. Dọn dẹp và Chuyển hướng
     
     // Clear cart
     unset($_SESSION['cart']);
     
     // Redirect based on payment method
     if ($payment_method === 'momo') {
-        // Redirect to MoMo payment page
-        header('Location: momo/momo_payment.php');
+        // Chuyển hướng đến cổng thanh toán MoMo và truyền order_id
+        header('Location: momo/momo_payment.php?orderId=' . $order_id);
     } else {
         // COD success page
-        header('Location: momo/order_success.php');
+        header('Location: order_success.php?orderId=' . $order_id); 
     }
     
 } catch (Exception $e) {
@@ -116,11 +116,13 @@ try {
         $conn->rollBack();
     }
     
-    // Log error
+    // Ghi lỗi chi tiết vào log
     error_log('Checkout error: ' . $e->getMessage());
     
-    $_SESSION['error'] = 'Có lỗi xảy ra. Vui lòng thử lại';
+    // Hiển thị lỗi ra màn hình
+    $_SESSION['error'] = 'Lỗi tạo đơn hàng: ' . $e->getMessage(); 
     header('Location: checkout.php');
 }
 
 exit();
+?>
