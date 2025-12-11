@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $price = $_POST['price'];
     $cat_id = $_POST['category_id'];
-    $image = '../images/book-stack.jpg';
+    $image = '../images/book-stack.png';
 
     // Xử lý upload ảnh
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
