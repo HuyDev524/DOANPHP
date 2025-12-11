@@ -1,0 +1,506 @@
+/* =========================================
+   1. CẤU HÌNH CHUNG (BASE & LAYOUT)
+   ========================================= */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    /* Container mặc định dùng cho Header để căn chỉnh */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+/* =========================================
+   2. HEADER & NAVIGATION
+   ========================================= */
+.header {
+    background: #0f4c81;
+    color: white;
+    padding: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky; /* Giữ menu khi cuộn chuột */
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Ô tìm kiếm */
+.search-box {
+    display: flex;
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 20px; /* Cách logo và user */
+    flex-grow: 1;   /* Tự động co giãn ở giữa */
+    max-width: 500px;
+}
+
+.search-box input {
+    padding: 10px;
+    border: none;
+    outline: none;
+    flex-grow: 1; /* Input chiếm hết khoảng trống */
+}
+
+.search-box button {
+    background: #ee2e24;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+    background: #c21c12;
+}
+
+/* Khu vực User & Giỏ hàng (Gộp .user-info và .user-auth lại làm 1) */
+.user-auth {
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa các phần tử con */
+}
+
+.user-auth a {
+    color: #ffeb3b; /* Vàng nhạt */
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.user-auth a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.cart-info {
+    background: #0a365c;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap; /* Không xuống dòng */
+}
+
+/* Menu Danh mục */
+.category-nav {
+    background: #fff;
+    border-bottom: 2px solid #ddd;
+    text-align: center;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.category-nav a {
+    display: inline-block;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 8px 15px;
+    margin: 0 5px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.category-nav a:hover, 
+.category-nav a.active {
+    background-color: #0f4c81;
+    color: white;
+}
+
+/* =========================================
+   3. NỘI DUNG CHÍNH & SẢN PHẨM
+   ========================================= */
+.main-content {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+    display: block; /* Ghi đè display:flex của container nếu dùng chung class */
+}
+
+.section-title {
+    color: #0f4c81;
+    border-bottom: 2px solid #0f4c81;
+    display: inline-block;
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+
+/* Grid Sản phẩm */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: 0.3s;
+    border: 1px solid #e1e1e1;
+    display: flex;           /* Dùng flex để căn đều nút xuống đáy */
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.product-name {
+    font-size: 15px;
+    color: #333;
+    height: 40px; /* Giới hạn chiều cao tên */
+    overflow: hidden;
+    margin-bottom: 5px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.product-price {
+    color: #d0021b;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Nút thêm vào giỏ (Tận dụng style nút chung) */
+.btn-add {
+    background: white;
+    color: #0f4c81;
+    border: 1px solid #0f4c81;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.btn-add:hover {
+    background: #0f4c81;
+    color: white;
+}
+
+/* =========================================
+   4. TRANG AUTH (LOGIN / REGISTER)
+   ========================================= */
+/* Class riêng cho body trang auth để căn giữa */
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.auth-container {
+    background: white;
+    width: 400px;
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-top: 5px solid #0f4c81;
+}
+
+.auth-container h2 {
+    text-align: center;
+    color: #0f4c81;
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* Input chung cho Form */
+.form-group input, 
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #0f4c81;
+    outline: none;
+}
+
+/* Nút Submit (Dùng chung style nút đặc) */
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #0f4c81;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.btn-submit:hover {
+    background: #093660;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.auth-link a {
+    color: #0f4c81;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Thông báo lỗi/thành công */
+.msg {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+}
+.msg.error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+.msg.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+/* =========================================
+   5. POPUP & TIỆN ÍCH
+   ========================================= */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex; justify-content: center; align-items: center;
+}
+
+.success-popup {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 350px;
+    animation: popin 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.checkmark {
+    font-size: 60px;
+    color: #4CAF50;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Nút đóng popup (Kế thừa style btn-submit nhưng đổi màu nếu thích) */
+.btn-close {
+    background: #0f4c81;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    margin-top: 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s;
+}
+.btn-close:hover { background: #093660; }
+
+@keyframes popin {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+/* =========================================
+   6. TRANG GIỎ HÀNG (CART VIEW) - TỐI ƯU
+   ========================================= */
+
+/* Tận dụng nền trắng, bóng đổ giống .product-card nhưng áp dụng cho bảng */
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px; /* Giống .product-card */
+    overflow: hidden;   /* Để bo góc không bị header che mất */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Giống shadow nhẹ của web */
+    margin-bottom: 20px;
+}
+
+.cart-table th, 
+.cart-table td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.cart-table th {
+    background-color: #0f4c81; /* Tận dụng màu Header */
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+.cart-table img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Input số lượng: Tận dụng style của .form-group input nhưng chỉnh nhỏ lại */
+.qty-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Khu vực nút bấm và tổng tiền */
+.cart-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Để responsive tốt hơn */
+    gap: 15px;
+}
+
+/* Tổng tiền: Tận dụng màu đỏ của .product-price */
+.total-section {
+    text-align: right;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #333;
+}
+.total-section span {
+    color: #d0021b; /* Màu giá tiền cũ */
+    font-size: 24px;
+}
+
+/* --- CÁC NÚT BẤM RIÊNG CHO GIỎ HÀNG --- */
+
+/* Nút Xóa: Đơn giản, không nền */
+.btn-delete {
+    color: #d0021b;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+}
+.btn-delete:hover { text-decoration: underline; }
+
+/* Nút Cập nhật: Tận dụng style .btn-add (nền trắng viền xanh) */
+.btn-update {
+    background: white;
+    color: #0f4c81;
+    border: 1px solid #0f4c81;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.btn-update:hover { background: #0f4c81; color: white; }
+
+/* Nút Thanh Toán: Tận dụng style .btn-submit (nền xanh full) 
+   nhưng đổi sang màu Đỏ/Cam cho nổi bật hành động mua */
+.btn-checkout {
+    display: inline-block;
+    background: #ee2e24; /* Màu nút tìm kiếm cũ */
+    color: white;
+    padding: 12px 30px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+    text-transform: uppercase;
+}
+.btn-checkout:hover { background: #c21c12; }
+
+/* Link tiếp tục mua sắm */
+.btn-continue {
+    color: #0f4c81;
+    text-decoration: none;
+    font-weight: 600;
+}
+.btn-continue:hover { text-decoration: underline; }
+/* =========================================
+   7. GIAO DIỆN ADMIN
+   ========================================= */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.admin-table th, .admin-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+.admin-table th { background: #333; color: white; }
+.admin-table img { height: 50px; object-fit: cover; }
+
+.btn-admin {
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 0 2px;
+}
+.btn-edit { background: #ffc107; color: #333; }
+.btn-del { background: #dc3545; color: white; }
+.btn-create { background: #28a745; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 4px;}
+
+/* Form Admin */
+.admin-form { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.admin-form label { display: block; margin-bottom: 5px; font-weight: bold; }
+.admin-form input, .admin-form select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
