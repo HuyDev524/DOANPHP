@@ -11,6 +11,7 @@ $categories = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
 $total_items = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
 // DANH SÁCH THƯ MỤC BÀI TẬP CẦN HIỂN THỊ
+// Đã thêm thư mục 'css' vào mảng này để quét tự động
 $bai_taps = [
     'lab02',
     'lab03',
@@ -19,6 +20,7 @@ $bai_taps = [
     'lab06',
     'lab07',
     'lab08',
+    'css', // Thêm thư mục CSS vào danh sách để nó được quét cùng vòng lặp
 ];
 ?>
 
@@ -47,10 +49,11 @@ $bai_taps = [
         }
         .lab-folder h3 { 
             font-size: 1.25em; 
-            color: #007bff; 
+            /* Đổi màu tiêu đề CSS khác đi cho dễ nhận biết */
+            color: <?php echo ($lab_folder === 'css') ? '#dc3545' : '#007bff'; ?>;
             margin-top: 0;
             padding-bottom: 5px;
-            border-bottom: 2px solid #007bff;
+            border-bottom: 2px solid <?php echo ($lab_folder === 'css') ? '#dc3545' : '#007bff'; ?>;
         }
         .lab-folder ul { 
             list-style-type: none; 
@@ -111,16 +114,18 @@ $bai_taps = [
         <h2 class="section-title">📂 BÀI TẬP CỦA SINH VIÊN</h2>
         
         <div class="homework-list">
-            <p style="font-style: italic; color: #555;">Dưới đây là danh sách các file bài tập theo từng Lab. Nhấn vào tên file để xem nội dung.</p>
+            <p style="font-style: italic; color: #555;">Dưới đây là danh sách các file bài tập theo từng Lab và thư mục CSS. Nhấn vào tên file để xem nội dung.</p>
             
             <?php foreach ($bai_taps as $lab_folder): ?>
             
                 <div class="lab-folder">
-                    <h3>Thư mục **<?php echo strtoupper($lab_folder); ?>** (bt_LeThanhHuy/<?php echo $lab_folder; ?>)</h3>
+                    <h3>
+                        Thư mục **<?php echo ($lab_folder === 'css') ? 'CSS CHUNG' : strtoupper($lab_folder); ?>** (bt_LeThanhHuy/<?php echo $lab_folder; ?>)
+                    </h3>
                     
                     <ul>
                         <?php
-                        // Đường dẫn vật lý tới thư mục Lab
+                        // Đường dẫn vật lý tới thư mục
                         $path = "bt_LeThanhHuy/" . $lab_folder;
                         
                         // Kiểm tra và đọc thư mục
@@ -151,17 +156,6 @@ $bai_taps = [
                     </ul>
                 </div>
             <?php endforeach; ?>
-
-            <div class="lab-folder">
-                 <h3>Thư mục **CSS Chung** (bt_LeThanhHuy/css)</h3>
-                 <ul>
-                    <li>
-                        <a href="<?php echo htmlspecialchars("bt_LeThanhHuy/css/style.css"); ?>" target="_blank">
-                             <span class="file-icon">📄</span> style.css
-                        </a>
-                    </li>
-                 </ul>
-            </div>
             
         </div>
     </div>
