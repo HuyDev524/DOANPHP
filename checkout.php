@@ -37,15 +37,16 @@ foreach ($cart as $product_id => $quantity) {
 
 // Get user info
 $username = $_SESSION['username'];
-// ĐÃ SỬA: CHỈ SELECT CÁC CỘT CÓ TRONG BẢNG USERS CỦA BẠN (id, full_name, phone)
-$stmt = $conn->prepare("SELECT id, full_name, phone FROM users WHERE username = ?");
+// ĐÃ SỬA: CHỈ SELECT CÁC CỘT CÓ TRONG BẢNG USERS CỦA BẠN (id, full_name, phone, address)
+$stmt = $conn->prepare("SELECT id, full_name, phone, address FROM users WHERE username = ?");
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Gán giá trị mặc định cho form HTML
 $fullname_value = $user['full_name'] ?? '';
 $phone_value = $user['phone'] ?? '';
-$email_value = ''; // Giả sử email không có trong DB users nên để trống để người dùng nhập
+$address_value = $user['address'] ?? ''; // Lấy giá trị địa chỉ (kể cả NULL)
+$email_value = ''; // Giả sử email không có trong DB users nên để trống
 ?>
 
 <!DOCTYPE html>
@@ -86,7 +87,7 @@ $email_value = ''; // Giả sử email không có trong DB users nên để tr�
                         
                         <div class="form-group">
                             <label>Địa chỉ giao hàng <span class="required">*</span></label>
-                            <textarea name="address" rows="3" required placeholder="Nhập địa chỉ đầy đủ"></textarea>
+                            <textarea name="address" rows="3" required placeholder="Nhập địa chỉ đầy đủ"><?php echo htmlspecialchars($address_value); ?></textarea>
                         </div>
                     </div>
                     
