@@ -1,27 +1,85 @@
 <?php
-// Đây là file bai_tap.php, sử dụng cấu trúc tương tự index.php để giữ thanh điều hướng
 session_start();
 require 'db.php'; // Đảm bảo file này tồn tại và kết nối PDO thành công
 
-// Lấy danh sách MENU Danh mục (để hiển thị menu điều hướng)
+// Lấy dữ liệu cho thanh điều hướng
 $stmt_cats = $conn->query("SELECT * FROM categories ORDER BY id ASC");
 $categories = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
-
-// Đếm giỏ hàng (để hiển thị giỏ hàng)
 $total_items = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
-// DANH SÁCH THƯ MỤC BÀI TẬP CẦN HIỂN THỊ
-// Đã thêm thư mục 'css' vào mảng này để quét tự động
-$bai_taps = [
-    'lab02',
-    'lab03',
-    'lab04',
-    'lab05',
-    'lab06',
-    'lab07',
-    'lab08',
-    'css', // Thêm thư mục CSS vào danh sách để nó được quét cùng vòng lặp
-];
+// --- HÀM ĐỆ QUY ĐỂ QUÉT TOÀN BỘ THƯ MỤC CON VÀ FILE ---
+/**
+ * Quét thư mục đệ quy và tạo HTML cho các file/thư mục.
+ * @param string $dir Đường dẫn vật lý đến thư mục cần quét.
+ * @param string $base_url Đường dẫn web tương đối cho các liên kết.
+ */
+function display_directory_contents($dir, $base_url) {
+    // Chỉ xử lý các thư mục tồn tại và có thể đọc được
+    if (!is_dir($dir) || !($handle = opendir($dir))) {
+        return "<p style='color: red;'>Không thể đọc thư mục: " . htmlspecialchars($dir) . "</p>";
+    }
+
+    $html = '<ul>';
+    $files = [];
+    $folders = [];
+
+    // Đọc tất cả các mục trong thư mục hiện tại
+    while (false !== ($item = readdir($handle))) {
+        // Bỏ qua các mục hệ thống
+        if ($item == "." || $item == "..") {
+            continue;
+        }
+
+        $full_path = $dir . '/' . $item;
+        $web_path = $base_url . '/' . $item;
+
+        if (is_dir($full_path)) {
+            $folders[] = [
+                'name' => $item,
+                'path' => $full_path,
+                'web_path' => $web_path
+            ];
+        } else if (is_file($full_path)) {
+            $files[] = [
+                'name' => $item,
+                'web_path' => $web_path
+            ];
+        }
+    }
+    closedir($handle);
+
+    // Sắp xếp thư mục và file theo tên
+    usort($folders, function($a, $b) { return strcmp($a['name'], $b['name']); });
+    usort($files, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+    // 1. Hiển thị tất cả các file trong thư mục hiện tại
+    foreach ($files as $file) {
+        $html .= '<li>';
+        $html .= '<a href="' . htmlspecialchars($file['web_path']) . '" target="_blank">';
+        $html .= '<span class="file-icon">📄</span> ' . htmlspecialchars($file['name']);
+        $html .= '</a>';
+        $html .= '</li>';
+    }
+
+    // 2. Hiển thị tất cả các thư mục con (và gọi đệ quy)
+    foreach ($folders as $folder) {
+        $html .= '<li class="is-folder">';
+        $html .= '<span class="folder-icon">📁</span> **' . htmlspecialchars($folder['name']) . '**';
+        
+        // Gọi đệ quy để quét thư mục con
+        $html .= display_directory_contents($folder['path'], $folder['web_path']);
+        
+        $html .= '</li>';
+    }
+
+    $html .= '</ul>';
+    return $html;
+}
+
+// Thiết lập thư mục gốc cần quét
+$ROOT_FOLDER_NAME = "bt_LeThanhHuy";
+$ROOT_DIR = __DIR__ . '/' . $ROOT_FOLDER_NAME; // Đường dẫn vật lý tuyệt đối
+$ROOT_URL = $ROOT_FOLDER_NAME; // Đường dẫn web tương đối
 ?>
 
 <!DOCTYPE html>
@@ -32,50 +90,21 @@ $bai_taps = [
     <link rel="stylesheet" href="css/style.css">
     
     <style>
-        .homework-list {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        /* CSS Cơ bản */
+        .homework-list { max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.05); }
+        .homework-list ul { list-style: none; padding-left: 20px; border-left: 1px solid #ccc; }
+        .homework-list ul ul { margin-top: 5px; margin-bottom: 5px; } /* Thụt lề cho cấp độ con */
+        .homework-list li { margin: 5px 0; }
+        .homework-list li a { 
+            text-decoration: none; color: #343a40; padding: 5px 10px; display: block; 
+            border-bottom: 1px dashed #ced4da; transition: background-color 0.2s; 
         }
-        .lab-folder { 
-            margin-bottom: 25px; 
-            padding: 15px; 
-            border: 1px solid #dee2e6; 
-            border-radius: 5px; 
-            background-color: #f8f9fa;
-        }
-        .lab-folder h3 { 
-            font-size: 1.25em; 
-            /* Đổi màu tiêu đề CSS khác đi cho dễ nhận biết */
-            color: <?php echo ($lab_folder === 'css') ? '#dc3545' : '#007bff'; ?>;
-            margin-top: 0;
-            padding-bottom: 5px;
-            border-bottom: 2px solid <?php echo ($lab_folder === 'css') ? '#dc3545' : '#007bff'; ?>;
-        }
-        .lab-folder ul { 
-            list-style-type: none; 
-            padding-left: 0; 
-        }
-        .lab-folder li a { 
-            text-decoration: none; 
-            color: #343a40; 
-            padding: 8px 10px; 
-            display: block; 
-            border-bottom: 1px dashed #ced4da;
-            transition: background-color 0.2s;
-            font-size: 0.95em;
-        }
-        .lab-folder li a:hover { 
-            color: #0056b3; 
-            background-color: #e9ecef; 
-        }
-        .file-icon {
-            margin-right: 5px;
-            color: #28a745;
-        }
+        .homework-list li a:hover { color: #0056b3; background-color: #e9ecef; }
+        .file-icon, .folder-icon { margin-right: 5px; }
+        .file-icon { color: #28a745; }
+        .folder-icon { color: #ffc107; font-size: 1.1em; }
+        .is-folder { font-weight: bold; color: #007bff; margin-top: 15px; }
+        .is-folder span { color: #555; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -111,51 +140,15 @@ $bai_taps = [
     </nav>
 
     <div class="main-content">
-        <h2 class="section-title">📂 BÀI TẬP CỦA SINH VIÊN</h2>
+        <h2 class="section-title">📂 CẤU TRÚC FILE BÀI TẬP: <?php echo $ROOT_FOLDER_NAME; ?></h2>
         
         <div class="homework-list">
-            <p style="font-style: italic; color: #555;">Dưới đây là danh sách các file bài tập theo từng Lab và thư mục CSS. Nhấn vào tên file để xem nội dung.</p>
+            <p style="font-style: italic; color: #555;">Hiển thị toàn bộ cấu trúc thư mục con và file bên trong thư mục **`<?php echo $ROOT_FOLDER_NAME; ?>`**.</p>
             
-            <?php foreach ($bai_taps as $lab_folder): ?>
-            
-                <div class="lab-folder">
-                    <h3>
-                        Thư mục **<?php echo ($lab_folder === 'css') ? 'CSS CHUNG' : strtoupper($lab_folder); ?>** (bt_LeThanhHuy/<?php echo $lab_folder; ?>)
-                    </h3>
-                    
-                    <ul>
-                        <?php
-                        // Đường dẫn vật lý tới thư mục
-                        $path = "bt_LeThanhHuy/" . $lab_folder;
-                        
-                        // Kiểm tra và đọc thư mục
-                        if (is_dir($path) && $handle = opendir($path)) {
-                            while (false !== ($file = readdir($handle))) {
-                                // Bỏ qua các file hệ thống (. và ..) và các file ẩn
-                                if ($file != "." && $file != ".." && $file[0] != '.') {
-                                    $full_path = $path . "/" . $file;
-                                    $web_path = $full_path; 
-
-                                    // Chỉ hiển thị các file (bỏ qua các thư mục con khác)
-                                    if (is_file($full_path)): 
-                        ?>
-                                        <li>
-                                            <a href="<?php echo htmlspecialchars($web_path); ?>" target="_blank">
-                                                <span class="file-icon">📄</span> <?php echo htmlspecialchars($file); ?>
-                                            </a>
-                                        </li>
-                        <?php 
-                                    endif;
-                                }
-                            }
-                            closedir($handle);
-                        } else {
-                            echo "<li style='color: red;'>Lỗi: Không tìm thấy hoặc không đọc được thư mục '{$path}'.</li>";
-                        }
-                        ?>
-                    </ul>
-                </div>
-            <?php endforeach; ?>
+            <?php 
+            // KHÔNG CẦN VÒNG LẶP FOREACH NỮA, chỉ cần gọi hàm đệ quy trên thư mục gốc
+            echo display_directory_contents($ROOT_DIR, $ROOT_URL);
+            ?>
             
         </div>
     </div>
