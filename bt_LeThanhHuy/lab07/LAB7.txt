@@ -1,0 +1,74 @@
+https://stu-nghia.info/ltweb/lab07/lab07_bookstore_en.txt
+
+4.4 Sửa cột trangthai của bảng hoadon để có giá trị mặc định là 0.
+ALTER TABLE hoadon MODIFY trangthai tinyint(4) NOT NULL DEFAULT 0;
+
+4.5 Tạo view cho biết 10 sách có giá cao nhất
+CREATE VIEW top_10_book AS
+SELECT masach, tensach, gia
+FROM sach
+ORDER BY gia DESC
+LIMIT 10;
+--
+SELECT * FROM top_10_book;
+
+4.6 Tạo procedure để liệt masach, tensach của 1 loại khi biết mã loại
+DELIMITER $$
+CREATE PROCEDURE lietke(IN category_code VARCHAR(5))
+BEGIN
+    SELECT masach, tensach
+    FROM sach
+    WHERE maloai = category_code;
+END $$
+DELIMITER ;
+--
+CALL lietke('L01');
+
+5.1 Viết câu truy vấn tất cả các quyển sách được nhóm theo từng loại gồm các
+thông tin sau: masach, tensach, maloai, tenloai.
+SELECT s.masach, s.tensach, s.maloai, l.tenloai
+FROM sach s
+JOIN loai l ON s.maloai = l.maloai
+ORDER BY l.tenloai, s.masach;
+
+5.2 Tạo procedure dùng để cập nhật giá 1 quyển sách
+DELIMITER $$
+
+CREATE PROCEDURE capnhat(IN book_id VARCHAR(15), IN new_price FLOAT)
+BEGIN
+    UPDATE sach
+    SET gia = new_price
+    WHERE masach = book_id;
+END $$
+DELIMITER ;
+--
+CALL capnhat('S001', 350000.000);
+
+5.3 Viết câu truy vấn cho biết sách nào bán chạy nhất
+SELECT s.masach, s.tensach, SUM(ct.soluong) AS tongsoluong
+FROM chitiethd ct
+JOIN sach s ON ct.masach = s.masach
+GROUP BY s.masach, s.tensach
+ORDER BY tongsoluong DESC
+LIMIT 1;
+
+5.4 Tạo view cho biết 10 quyển sách bán chạy nhất
+CREATE VIEW top_10_ban_chay AS
+SELECT s.masach, s.tensach, SUM(ct.soluong) AS tongsoluong
+FROM chitiethd ct
+JOIN sach s ON ct.masach = s.masach
+GROUP BY s.masach, s.tensach
+ORDER BY tongsoluong DESC
+LIMIT 10;
+
+5.5 Sao lưu CSDL bookstore
+mysqldump -u username -p bookstore > bookstore_backup.sql
+CD C\ để về ổ C
+sau đó CD WAMP64 -> CD BIN -> CD MYSQL -> CD MYSQL8.2.0 -> CD BIN -> chạy lệnh mysqldump -u root -p bookstore > D:\backup_bookstore.sql
+Vậy là đã nén được file backup ra ổ D
+5.6 Xóa CSDL bookstore.
+drop database bookstore
+
+5.7 Phục hồi CSDL bookstore
+mysql -u root -p bookstore < bookstore_backup.sql
+Vào phpmyadmin tạo database bookstore trước sau đó chạy lệnh: mysql -u root -p bookstore < D:\backup_bookstore.sql

@@ -1,0 +1,57 @@
+/* File: css/style.css */
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f4f4f4;
+}
+
+/* Định dạng tiêu đề */
+h3 {
+  color: #333;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 5px;
+}
+
+/* Khối hiển thị từng cuốn sách */
+.book {
+  width: 250px;
+  height: 350px; /* Tăng chiều cao lên chút để chứa đủ ảnh và tên */
+  margin: 15px;
+  background: #fff;
+  float: left;
+  border: 1px solid #ddd;
+  border-radius: 5px; /* Bo tròn góc nhẹ */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Hiệu ứng khi di chuột vào sách */
+.book:hover {
+  border-color: #aaa;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Tên sách */
+.book-name {
+  font-weight: bold;
+  color: #0066cc;
+  padding: 10px 5px;
+  height: 40px; /* Cố định chiều cao tên sách */
+  display: block;
+  overflow: hidden;
+}
+
+/* Hình ảnh sách */
+.book img {
+  max-width: 90%;
+  height: 220px;
+  object-fit: cover; /* Giữ tỉ lệ ảnh đẹp, không bị méo */
+  margin-top: 10px;
+  border: 1px solid #eee;
+}
+
+/* Clear float để footer không bị lỗi */
+.clear {
+  clear: both;
+}
