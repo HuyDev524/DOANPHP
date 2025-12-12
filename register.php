@@ -24,28 +24,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. Kiểm tra dữ liệu đầu vào
     if (empty($username) || empty($password) || empty($fullname) || empty($phone)) {
         $error = "Vui lòng điền đầy đủ thông tin bắt buộc!";
+    } elseif (strlen($password) < 6) { // Thêm kiểm tra độ dài password
+        $error = "Mật khẩu phải có ít nhất 6 ký tự.";
     } elseif ($password !== $confirm_password) {
         $error = "Mật khẩu xác nhận không khớp!";
     } else {
         // 2. Kiểm tra tên đăng nhập đã tồn tại chưa
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        
-        if ($stmt->rowCount() > 0) {
-            $error = "Tên đăng nhập này đã có người sử dụng!";
-        } else {
-            // 3. Thêm người dùng mới vào DB (Lưu password thường theo ý bạn)
-            // Câu lệnh SQL thêm cột phone và address
-            $sql = "INSERT INTO users (username, password, full_name, phone, address, role) VALUES (?, ?, ?, ?, ?, 0)";
-            $stmt = $conn->prepare($sql);
+        try {
+            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+            $stmt->execute([$username]);
             
-            if ($stmt->execute([$username, $password, $fullname, $phone, $address])) {
-                $success = "Đăng ký thành công! Bạn có thể đăng nhập ngay.";
-                // Reset form sau khi thành công
-                $username = $fullname = $phone = $address = ''; 
+            if ($stmt->rowCount() > 0) {
+                $error = "Tên đăng nhập này đã có người sử dụng!";
             } else {
-                $error = "Có lỗi xảy ra, vui lòng thử lại!";
+                // 3. Thêm người dùng mới vào DB (Thêm cột phone và address)
+                $sql = "INSERT INTO users (username, password, full_name, phone, address, role) VALUES (?, ?, ?, ?, ?, 0)";
+                $stmt = $conn->prepare($sql);
+                
+                if ($stmt->execute([$username, $password, $fullname, $phone, $address])) {
+                    $success = "Đăng ký thành công! Bạn có thể đăng nhập ngay.";
+                    // Reset form sau khi thành công
+                    $username = $fullname = $phone = $address = ''; 
+                } else {
+                    $error = "Có lỗi xảy ra, vui lòng thử lại!";
+                }
             }
+        } catch (PDOException $e) {
+            // Lỗi DB (Ví dụ: cột không tồn tại)
+            error_log("Registration DB Error: " . $e->getMessage());
+            $error = "Lỗi hệ thống: Không thể đăng ký tài khoản.";
         }
     }
 }
@@ -60,6 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         /* CSS riêng cho form đăng ký dài hơn chút */
         .auth-container { max-width: 500px; margin: 50px auto; }
+        .msg { padding: 15px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; }
+        .msg.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .msg.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        /* ĐIỀU CHỈNH MÀU CHO LINK ĐĂNG NHẬP */
+        .msg.success a { 
+            color: #155724 !important; /* Màu xanh đậm của text chính */
+            text-decoration: underline; 
+        }
     </style>
 </head>
 <body class="auth-page">
@@ -73,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if($success): ?>
             <div class="msg success">
                 <?php echo $success; ?> 
-                <br> <a href="login.php" style="color: white; text-decoration: underline;">Bấm vào đây để Đăng nhập</a>
+                <br> <a href="login.php">Bấm vào đây để Đăng nhập</a>
             </div>
         <?php endif; ?>
 
