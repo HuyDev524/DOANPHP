@@ -8,21 +8,18 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Lấy dữ liệu POST từ form
 $fullname = trim($_POST['fullname'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $address = trim($_POST['address'] ?? '');
 $payment_method = $_POST['payment_method'] ?? 'momo';
 
-// Validate input
 if (empty($fullname) || empty($phone) || empty($email) || empty($address)) {
     $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin giao hàng';
     header('Location: checkout.php');
     exit();
 }
 
-// Get cart
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
 if (empty($cart)) {
@@ -31,12 +28,10 @@ if (empty($cart)) {
 }
 
 try {
-    // 1. Lấy ID người dùng (Dựa trên DB dump: cột ID trong bảng users là 'id')
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute([$_SESSION['username']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Kiểm tra xem có lấy được ID không
     if (!$user) {
         throw new Exception("Không tìm thấy thông tin người dùng.");
     }
@@ -57,10 +52,8 @@ try {
     }
     
     // 3. Xác định trạng thái đơn hàng ban đầu (Dựa trên logic MoMo)
-    // Cột trong DB là 'status'
-    $order_status = ($payment_method === 'momo') ? 'pending' : 'pending'; // COD cũng là pending, chờ admin xác nhận
+    $order_status = ($payment_method === 'momo') ? 'pending' : 'pending'; 
     
-    // 4. Tạo đơn hàng (Dựa trên cấu trúc bảng orders đã sửa: user_id, fullname, phone, address, total_money, status, payment_method)
     $stmt = $conn->prepare("
         INSERT INTO orders (user_id, fullname, phone, address, total_money, status, payment_method, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
@@ -85,7 +78,6 @@ try {
         $product = $stmt_product->fetch(PDO::FETCH_ASSOC);
         
         if ($product) {
-            // Cột trong DB order_items có 'product_name'
             $stmt_item = $conn->prepare("
                 INSERT INTO order_items (order_id, product_id, product_name, quantity, price)
                 VALUES (?, ?, ?, ?, ?)
@@ -97,12 +89,9 @@ try {
     // Commit Transaction
     $conn->commit();
     
-    // 6. Dọn dẹp và Chuyển hướng
     
-    // Clear cart
     unset($_SESSION['cart']);
     
-    // Redirect based on payment method
     if ($payment_method === 'momo') {
         // Chuyển hướng đến cổng thanh toán MoMo và truyền order_id
         header('Location: momo/momo_payment.php?orderId=' . $order_id);

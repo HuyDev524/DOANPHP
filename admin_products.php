@@ -2,13 +2,12 @@
 session_start();
 require 'db.php';
 
-// 1. KIỂM TRA QUYỀN ADMIN (Nếu role != 1 thì đuổi về trang chủ)
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 1) {
     header("Location: index.php");
     exit();
 }
 
-// 2. XỬ LÝ TÌM KIẾM
+//XỬ LÝ TÌM KIẾM
 $keyword = '';
 $sql = "SELECT p.*, c.name as cat_name FROM products p 
         LEFT JOIN categories c ON p.category_id = c.id";
@@ -18,7 +17,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
     $sql .= " WHERE p.name LIKE :kw";
 }
 
-$sql .= " ORDER BY p.id DESC"; // Mới nhất lên đầu
+$sql .= " ORDER BY p.id DESC"; 
 
 $stmt = $conn->prepare($sql);
 if ($keyword) {

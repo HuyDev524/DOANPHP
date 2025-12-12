@@ -5,7 +5,6 @@ require 'db.php';
 // Kiểm tra quyền Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 1) { header("Location: index.php"); exit(); }
 
-// Lấy danh mục để hiển thị Select Box
 $cats = $conn->query("SELECT * FROM categories")->fetchAll(PDO::FETCH_ASSOC);
 
 $error = '';
@@ -16,10 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cat_id = $_POST['category_id'];
     $image = '../images/book-stack.png';
 
-    // Xử lý upload ảnh
+    
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $target_dir = "images/";
-        // Tạo tên file ngẫu nhiên để tránh trùng: time_tenfile.jpg
         $file_name = time() . '_' . basename($_FILES["image"]["name"]);
         $target_file = $target_dir . $file_name;
         

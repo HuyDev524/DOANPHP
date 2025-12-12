@@ -4,7 +4,6 @@ require 'db.php';
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 1) { header("Location: index.php"); exit(); }
 
-// Lấy ID sản phẩm cần sửa
 if (!isset($_GET['id'])) { header("Location: admin_products.php"); exit(); }
 $id = $_GET['id'];
 
@@ -15,7 +14,6 @@ $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$product) { die("Sản phẩm không tồn tại!"); }
 
-// Lấy danh mục
 $cats = $conn->query("SELECT * FROM categories")->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $target_file = $target_dir . $file_name;
         
         if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-            $image = $file_name; // Cập nhật tên ảnh mới
+            $image = $file_name; 
         }
     }
 

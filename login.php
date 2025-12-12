@@ -8,22 +8,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username_input = $_POST['username'];
     $password_input = $_POST['password'];
 
-    // Tìm user trong database
+    // Tìm user
     $sql = "SELECT * FROM users WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$username_input]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // So sánh mật khẩu
     if ($user && $password_input === $user['password']) {
-        
-        // 1. Lưu thông tin vào Session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['fullname'] = $user['full_name'];
-        $_SESSION['role'] = $user['role']; // Quan trọng: Lưu quyền để các trang khác kiểm tra
+        $_SESSION['role'] = $user['role']; 
 
-        // 2. PHÂN QUYỀN CHUYỂN HƯỚNG (LOGIC MỚI)
+        
         if ($user['role'] == 1) {
             // Nếu là Admin (role = 1) -> Vào trang quản lý
             header("Location: admin_products.php");

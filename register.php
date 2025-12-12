@@ -5,7 +5,6 @@ require 'db.php';
 $error = '';
 $success = '';
 
-// Khởi tạo biến để giữ lại giá trị nếu nhập lỗi (Sticky form)
 $username = '';
 $fullname = '';
 $phone = '';
@@ -16,15 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $fullname = trim($_POST['full_name']);
-    
-    // Lấy thêm 2 thông tin mới
     $phone = trim($_POST['phone']);
     $address = trim($_POST['address']);
 
-    // 1. Kiểm tra dữ liệu đầu vào
     if (empty($username) || empty($password) || empty($fullname) || empty($phone)) {
         $error = "Vui lòng điền đầy đủ thông tin bắt buộc!";
-    } elseif (strlen($password) < 6) { // Thêm kiểm tra độ dài password
+    } elseif (strlen($password) < 6) { 
         $error = "Mật khẩu phải có ít nhất 6 ký tự.";
     } elseif ($password !== $confirm_password) {
         $error = "Mật khẩu xác nhận không khớp!";
@@ -37,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->rowCount() > 0) {
                 $error = "Tên đăng nhập này đã có người sử dụng!";
             } else {
-                // 3. Thêm người dùng mới vào DB (Thêm cột phone và address)
                 $sql = "INSERT INTO users (username, password, full_name, phone, address, role) VALUES (?, ?, ?, ?, ?, 0)";
                 $stmt = $conn->prepare($sql);
                 
@@ -50,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         } catch (PDOException $e) {
-            // Lỗi DB (Ví dụ: cột không tồn tại)
             error_log("Registration DB Error: " . $e->getMessage());
             $error = "Lỗi hệ thống: Không thể đăng ký tài khoản.";
         }

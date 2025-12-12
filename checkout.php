@@ -2,27 +2,22 @@
 session_start();
 require 'db.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['username'])) {
     header('Location: login.php');
     exit();
 }
 
-// Get cart from session
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
 if (empty($cart)) {
-    // Nếu giỏ hàng trống, chuyển hướng về trang giỏ hàng
     header('Location: cart_view.php');
     exit();
 }
 
-// Calculate total and fetch cart items details
 $total = 0;
 $cart_items = [];
 
 foreach ($cart as $product_id => $quantity) {
-    // Truy vấn thông tin sản phẩm
     $stmt = $conn->prepare("SELECT id, name, price FROM products WHERE id = ?");
     $stmt->execute([$product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,18 +30,15 @@ foreach ($cart as $product_id => $quantity) {
     }
 }
 
-// Get user info
 $username = $_SESSION['username'];
-// ĐÃ SỬA: CHỈ SELECT CÁC CỘT CÓ TRONG BẢNG USERS CỦA BẠN (id, full_name, phone, address)
 $stmt = $conn->prepare("SELECT id, full_name, phone, address FROM users WHERE username = ?");
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Gán giá trị mặc định cho form HTML
 $fullname_value = $user['full_name'] ?? '';
 $phone_value = $user['phone'] ?? '';
-$address_value = $user['address'] ?? ''; // Lấy giá trị địa chỉ (kể cả NULL)
-$email_value = ''; // Giả sử email không có trong DB users nên để trống
+$address_value = $user['address'] ?? ''; 
+$email_value = ''; 
 ?>
 
 <!DOCTYPE html>

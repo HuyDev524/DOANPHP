@@ -1,21 +1,18 @@
 <?php
 session_start();
-require 'db.php'; // Đảm bảo file này tồn tại và kết nối PDO thành công
+require 'db.php'; 
 
-// --- XỬ LÝ LOGIC ---
 $tu_khoa = "";
 $tieu_de = "SẢN PHẨM NỔI BẬT";
 
 // 1. Tìm kiếm
 if (isset($_GET['timkiem']) && !empty($_GET['timkiem'])) {
     $tu_khoa = $_GET['timkiem'];
-    // Sử dụng Prepared Statement để chống SQL Injection
     $sql = "SELECT * FROM products WHERE name LIKE :keyword";
     $stmt = $conn->prepare($sql);
     $stmt->execute(['keyword' => "%$tu_khoa%"]);
     $tieu_de = "Kết quả tìm kiếm: '" . htmlspecialchars($tu_khoa) . "'";
 
-// 2. Lọc theo Danh mục (Dùng ID)
 } elseif (isset($_GET['danhmuc'])) {
     $cat_id = $_GET['danhmuc']; 
     
@@ -35,7 +32,6 @@ if (isset($_GET['timkiem']) && !empty($_GET['timkiem'])) {
         $products = []; 
     }
 
-// 3. Mặc định (Hiển thị tất cả sản phẩm)
 } else {
     $sql = "SELECT * FROM products ORDER BY id DESC";
     $stmt = $conn->prepare($sql);
@@ -43,7 +39,6 @@ if (isset($_GET['timkiem']) && !empty($_GET['timkiem'])) {
 }
 
 if (!isset($products)) {
-    // Chỉ fetchAll nếu $products chưa được gán giá trị ở khối lọc danh mục không tồn tại
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -51,7 +46,7 @@ if (!isset($products)) {
 $stmt_cats = $conn->query("SELECT * FROM categories ORDER BY id ASC");
 $categories = $stmt_cats->fetchAll(PDO::FETCH_ASSOC);
 
-// Đếm tổng số lượng sản phẩm trong giỏ hàng (chỉ tính số lượng, không tính loại sản phẩm)
+// Đếm tổng số lượng sản phẩm
 $total_items = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 ?>
 

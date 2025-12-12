@@ -2,27 +2,22 @@
 session_start();
 require 'db.php';
 
-// --- [MỚI] XỬ LÝ THÔNG BÁO ---
 $msg = "";
 if (isset($_SESSION['msg'])) {
     $msg = $_SESSION['msg'];
-    unset($_SESSION['msg']); // Xóa ngay để F5 không hiện lại
+    unset($_SESSION['msg']); 
 }
-// ----------------------------
 
 // Kiểm tra giỏ hàng có trống không
 $cart_empty = true;
 $products = [];
 $total_money = 0;
 
-// Kiểm tra session 'cart' có tồn tại và có phần tử không
 if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     $cart_empty = false;
     
-    // Lấy danh sách các ID sản phẩm (Ví dụ: 1,5,9)
     $ids = implode(',', array_keys($_SESSION['cart']));
     
-    // Lấy thông tin chi tiết các sản phẩm đó từ Database
     $stmt = $conn->prepare("SELECT * FROM products WHERE id IN ($ids)");
     $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);

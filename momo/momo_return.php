@@ -3,7 +3,6 @@ session_start();
 require_once '../db.php';
 require_once 'config.php';
 
-// 1. Kiểm tra dữ liệu trả về
 if (empty($_GET['signature'])) {
     die("Truy cập không hợp lệ.");
 }
@@ -22,22 +21,20 @@ $responseTime = $_GET['responseTime'];
 $extraData = $_GET['extraData'];
 $momoSignature = $_GET['signature'];
 
-// 2. Validate chữ ký (Bảo mật)
 $rawHash = "accessKey=" . $config['accessKey'] . "&amount=" . $amount . "&extraData=" . $extraData . "&message=" . $message . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&orderType=" . $orderType . "&partnerCode=" . $partnerCode . "&payType=" . $payType . "&requestId=" . $requestId . "&responseTime=" . $responseTime . "&resultCode=" . $resultCode . "&transId=" . $transId;
 $partnerSignature = hash_hmac("sha256", $rawHash, $config['secretKey']);
 
 if ($momoSignature !== $partnerSignature) {
     die("<h3>Cảnh báo: Chữ ký không hợp lệ!</h3>");
 }
-
-// 3. Lấy lại ID đơn hàng thật từ extraData
+//
 $decodedData = json_decode(base64_decode($extraData), true);
 $realOrderId = $decodedData['realOrderId'];
 
-// 4. Xử lý trạng thái đơn hàng
+// 
 if ($resultCode == '0') {
-    // === GIAO DỊCH THÀNH CÔNG ===
     try {
+        //
         $stmt = $conn->prepare("UPDATE orders SET status = 'confirmed', payment_method = 'momo' WHERE id = ?");
         $stmt->execute([$realOrderId]);
         
@@ -52,14 +49,13 @@ if ($resultCode == '0') {
         $color = "#ffc107";
     }
 } else {
-    // === GIAO DỊCH THẤT BẠI ===
     try {
         $stmt = $conn->prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?");
         $stmt->execute([$realOrderId]);
         
         $msg = "Thanh toán thất bại: " . $message;
         $icon = "❌";
-        $color = "#dc3545"; // Màu đỏ
+        $color = "#dc3545"; 
     } catch(PDOException $e) {
         $msg = "Lỗi DB: " . $e->getMessage();
     }
